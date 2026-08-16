@@ -1,0 +1,17 @@
+{
+  "kind": "slop-project-authority",
+  "policyRevision": "2026-08-16.1",
+  "projectId": "heir-elements-sdk",
+  "proposal": "https://github.com/elizaOS/slopdotcash/issues/115",
+  "repository": {
+    "fullName": "heirlabs/element-sdk",
+    "id": "1013158722",
+    "integrationBranch": "main"
+  },
+  "schemaVersion": "1",
+  "steward": {
+    "actorId": "58874935",
+    "login": "awidearray",
+    "nodeId": "MDQ6VXNlcjU4ODc0OTM1"
+  }
+}
