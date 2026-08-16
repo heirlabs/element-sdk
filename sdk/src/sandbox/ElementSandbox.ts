@@ -161,20 +161,27 @@ export class ElementSandbox {
 
   /**
    * Create API proxy for the element
+   *
+   * Only exposes methods the element's declared permissions actually allow.
+   * This must mirror ElementAPIProxy's own permission checks so an element
+   * never sees a client-side API surface wider than what the host will
+   * honor. `on` is always exposed: registering a handler isn't itself
+   * privileged, ElementAPIProxy filters delivered payloads by
+   * canReceiveFrom.
    */
   private createAPIProxy(): string {
     const methods = [
-      'getPortfolio',
-      'getTransactions',
-      'getPrices',
-      'saveData',
-      'loadData',
-      'sendNotification',
-      'analyzeImage',
-      'analyzeToken',
-      'emit',
+      this.permissions.portfolio && 'getPortfolio',
+      this.permissions.transactions && 'getTransactions',
+      this.permissions.network && 'getPrices',
+      this.permissions.storage && 'saveData',
+      this.permissions.storage && 'loadData',
+      this.permissions.notifications && 'sendNotification',
+      this.permissions.aiChat && 'analyzeImage',
+      this.permissions.aiChat && 'analyzeToken',
+      this.permissions.canSendTo.length > 0 && 'emit',
       'on'
-    ];
+    ].filter((method): method is string => typeof method === 'string');
 
     const proxy: any = {};
     
