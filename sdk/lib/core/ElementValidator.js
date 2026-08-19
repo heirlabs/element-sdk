@@ -84,6 +84,29 @@ class ElementValidator {
             });
         }
         else {
+            const declaredPermissionKeys = new Set([
+                'network',
+                'storage',
+                'notifications',
+                'clipboard',
+                'canReceiveFrom',
+                'canSendTo',
+                'portfolio',
+                'transactions',
+                'aiChat',
+                'wallet',
+                'maxMemory',
+                'maxCpu'
+            ]);
+            Object.keys(manifest.permissions).forEach(permission => {
+                if (!declaredPermissionKeys.has(permission)) {
+                    errors.push({
+                        code: 'UNKNOWN_PERMISSION',
+                        message: `Unknown permission: ${permission}`,
+                        field: `permissions.${permission}`
+                    });
+                }
+            });
             // Check for excessive permissions
             const permissionCount = Object.values(manifest.permissions).filter(v => v === true).length;
             if (permissionCount > 5) {
