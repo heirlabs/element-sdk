@@ -5,6 +5,26 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ElementValidator = void 0;
+const permissionKeys = {
+    network: true,
+    storage: true,
+    notifications: true,
+    clipboard: true,
+    canReceiveFrom: true,
+    canSendTo: true,
+    portfolio: true,
+    transactions: true,
+    aiChat: true,
+    wallet: true,
+    maxMemory: true,
+    maxCpu: true,
+    maxStorageSize: true,
+    camera: true,
+    microphone: true,
+    geolocation: true,
+    fullscreen: true
+};
+const allowedPermissionKeys = new Set(Object.keys(permissionKeys));
 class ElementValidator {
     /**
      * Validate a element manifest
@@ -84,6 +104,15 @@ class ElementValidator {
             });
         }
         else {
+            Object.keys(manifest.permissions).forEach(key => {
+                if (!allowedPermissionKeys.has(key)) {
+                    errors.push({
+                        code: 'UNKNOWN_PERMISSION',
+                        message: `Unknown permission ${key} is not supported`,
+                        field: `permissions.${key}`
+                    });
+                }
+            });
             // Check for excessive permissions
             const permissionCount = Object.values(manifest.permissions).filter(v => v === true).length;
             if (permissionCount > 5) {
