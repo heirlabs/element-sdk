@@ -2,6 +2,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import { isValidPermissionKey } from './permissionKeys';
+
+export { VALID_PERMISSION_KEYS, isValidPermissionKey } from './permissionKeys';
 
 export interface ValidateOptions {
   strict: boolean;
@@ -95,13 +98,12 @@ export class ValidateCommand {
         }
       }
 
-      // Validate permissions
+      // Validate permissions against SDK ElementPermissions keys
       if (manifest.permissions) {
-        const validPermissions = ['wallet', 'network', 'ai', 'storage', 'notifications', 'messaging'];
         for (const permission of Object.keys(manifest.permissions)) {
-          if (!validPermissions.includes(permission)) {
+          if (!isValidPermissionKey(permission)) {
             issues.push({
-              type: 'warning',
+              type: 'error',
               message: `Unknown permission in manifest.json: ${permission}`
             });
           }
