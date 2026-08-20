@@ -93,6 +93,40 @@ export class ElementValidator {
         message: 'Element manifest must include permissions'
       });
     } else {
+      // Deny-by-default: reject unknown permission keys before any other
+      // permission processing. The runtime's ElementPermissions contract has
+      // a closed set of host capabilities, so validator input must not
+      // silently carry undeclared capability names through an untrusted
+      // manifest.
+      const declaredPermissionKeys = new Set([
+        // API access
+        'network',
+        'storage',
+        'notifications',
+        'clipboard',
+        // Inter-element communication
+        'canReceiveFrom',
+        'canSendTo',
+        // Data access
+        'portfolio',
+        'transactions',
+        'aiChat',
+        'wallet',
+        // Resource limits
+        'maxMemory',
+        'maxCpu',
+      ]);
+
+      Object.keys(manifest.permissions).forEach(key => {
+        if (!declaredPermissionKeys.has(key)) {
+          errors.push({
+            code: 'UNKNOWN_PERMISSION',
+            message: `Unknown permission key: ${key}`,
+            field: `permissions.${key}`
+          });
+        }
+      });
+
       // Check for excessive permissions
       const permissionCount = Object.values(manifest.permissions).filter(v => v === true).length;
       if (permissionCount > 5) {
