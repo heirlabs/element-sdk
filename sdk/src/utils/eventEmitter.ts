@@ -35,13 +35,18 @@ export class ElementEventEmitter extends EventEmitter {
   }
 
   /**
-   * Get event history
+   * Get event history as shallow copies of each record so callers cannot
+   * mutate stored entries.
    */
   getHistory(event?: string): Array<{ event: string; data: any; timestamp: number }> {
-    if (event) {
-      return this.eventHistory.filter(e => e.event === event);
-    }
-    return [...this.eventHistory];
+    const records = event
+      ? this.eventHistory.filter(e => e.event === event)
+      : this.eventHistory;
+    return records.map(({ event: name, data, timestamp }) => ({
+      event: name,
+      data,
+      timestamp
+    }));
   }
 
   /**
@@ -55,7 +60,12 @@ export class ElementEventEmitter extends EventEmitter {
    * Set maximum history size
    */
   setMaxHistorySize(size: number): void {
-    this.maxHistorySize = Math.max(0, size);
+    if (!Number.isFinite(size) || size < 0 || !Number.isInteger(size)) {
+      throw new TypeError(
+        'maxHistorySize must be a finite non-negative integer'
+      );
+    }
+    this.maxHistorySize = size;
     // Trim existing history if needed
     while (this.eventHistory.length > this.maxHistorySize) {
       this.eventHistory.shift();
