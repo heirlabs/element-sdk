@@ -84,16 +84,23 @@ export class ElementAPIProxy implements ElementAPI {
   }
 
   emit(event: string, data: any): void {
-    // Check if element can send to others
-    if (this.permissions.canSendTo.length === 0) {
+    const canSendTo = this.permissions.canSendTo;
+    if (!Array.isArray(canSendTo) || canSendTo.length === 0) {
       throw new Error('Element cannot send events');
     }
-    
-    // Include source element ID
-    this.actualAPI.emit(event, {
+
+    const payload: { source: string; data: any; destinations?: string[] } = {
       source: this.elementId,
       data
-    });
+    };
+
+    // '*' is a wildcard grant. Specific IDs are attached so the host can enforce
+    // routing; never treat a non-empty list as an implicit broadcast.
+    if (!canSendTo.includes('*')) {
+      payload.destinations = [...canSendTo];
+    }
+
+    this.actualAPI.emit(event, payload);
   }
 
   on(event: string, handler: (data: any) => void): () => void {
