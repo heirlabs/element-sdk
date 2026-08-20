@@ -75,23 +75,21 @@ export abstract class DefaiElement extends EventEmitter {
     if (!this.context) {
       throw new Error('Element not mounted');
     }
-    this.context.api.emit(event, {
-      source: this.metadata.id,
-      data
-    });
+    const canSendTo = this.permissions.canSendTo;
+    if (!Array.isArray(canSendTo) || canSendTo.length === 0) {
+      throw new Error('Element cannot send events');
+    }
+    // Proxy already wraps {source, data}; pass the original payload only.
+    this.context.api.emit(event, data);
   }
 
   protected onFromOthers(event: string, handler: (data: any) => void): () => void {
     if (!this.context) {
       throw new Error('Element not mounted');
     }
+    // Proxy already unwraps to payload.data and enforces canReceiveFrom.
     return this.context.api.on(event, (payload) => {
-      // Check if this element can receive from the source
-      const canReceive = this.permissions.canReceiveFrom.includes('*') ||
-                        this.permissions.canReceiveFrom.includes(payload.source);
-      if (canReceive) {
-        handler(payload.data);
-      }
+      handler(payload);
     });
   }
 
